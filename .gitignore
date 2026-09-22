@@ -1,0 +1,9 @@
+# Files System
+.DS_Store
+
+# Build
+/target
+
+# Environment
+.env
+.env.dev
