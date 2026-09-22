@@ -20,11 +20,15 @@ pub async fn websocket(ws: WebSocketUpgrade, State(state): State<Arc<AppState>>)
 }
 
 async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
+    println!("WebSocket connection opened");
+
     let Some(Ok(Message::Text(message))) = socket.next().await else {
+        println!("WebSocket connection closed before authentication");
         return;
     };
 
     let Ok(ClientMessage::Auth { device_name, token }) = serde_json::from_str(&message) else {
+        println!("WebSocket authentication failed: invalid first message");
         let _ = send_message(
             &mut socket,
             ServerMessage::Error {
@@ -38,6 +42,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
     if let Some(token) = token {
         let valid = state.tokens.read().await.contains(&token);
         if !valid {
+            println!("WebSocket authentication denied: invalid token");
             let _ = send_message(
                 &mut socket,
                 ServerMessage::AuthDenied {
@@ -47,14 +52,20 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
             .await;
             return;
         }
+
+        println!("User authenticated with an existing token");
     } else {
         let _ = send_message(&mut socket, ServerMessage::AuthPending).await;
         let device_name = device_name.unwrap_or_else(|| "Web Remote".into());
-        let approved = tokio::task::spawn_blocking(move || prompt_for_approval(&device_name))
-            .await
-            .unwrap_or(false);
+        println!("User authentication requested for device '{}'", device_name);
+        let approval_device_name = device_name.clone();
+        let approved =
+            tokio::task::spawn_blocking(move || prompt_for_approval(&approval_device_name))
+                .await
+                .unwrap_or(false);
 
         if !approved {
+            println!("User authentication denied for device '{}'", device_name);
             let _ = send_message(
                 &mut socket,
                 ServerMessage::AuthDenied {
@@ -67,8 +78,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
 
         let token = Uuid::new_v4().to_string();
         state.tokens.write().await.insert(token.clone());
-        println!("✅ Token: {}", token);
-        let _ = list_all_allowed_tokens(&state).await;
+        println!("User authenticated and paired for device '{}'", device_name);
 
         if send_message(&mut socket, ServerMessage::AuthApproved { token })
             .await
@@ -96,6 +106,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
                 println!("Executing command {}", action_name);
                 match execute_control(action).await {
                     Ok(()) => {
+                        println!("Command executed successfully: {}", action_name);
                         if send_message(
                             &mut socket,
                             ServerMessage::CommandAck {
@@ -109,6 +120,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
                         }
                     }
                     Err((_, message)) => {
+                        println!("Command execution failed for {}: {}", action_name, message);
                         if send_message(&mut socket, ServerMessage::Error { message })
                             .await
                             .is_err()
@@ -154,6 +166,7 @@ async fn send_message(socket: &mut WebSocket, message: ServerMessage) -> Result<
 }
 
 fn prompt_for_approval(device_name: &str) -> bool {
+    println!("Waiting for pairing approval for device '{}'", device_name);
     println!("\n=========================================");
     println!("AUTH REQUEST FROM DEVICE: '{}'", device_name);
     print!("Allow control access on this computer? (y/N): ");
@@ -163,11 +176,4 @@ fn prompt_for_approval(device_name: &str) -> bool {
     let mut input = String::new();
     std::io::stdin().read_line(&mut input).unwrap_or(0);
     input.trim().eq_ignore_ascii_case("y")
-}
-
-async fn list_all_allowed_tokens(state: &Arc<AppState>) {
-    let tokens = state.tokens.read().await;
-    for token in tokens.iter() {
-        println!("{}", token);
-    }
 }
