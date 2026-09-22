@@ -52,7 +52,7 @@ The backend serves the built frontend from `../frontend/dist`, so the frontend m
 Once the backend is running, it will print the available local and network URLs in the terminal. The default server address is:
 
 - http://localhost:6767/
-- ws://<your-network-ip>:6767/ws
+- ws://\<your-network-ip>:6767/ws
 
 You can also override the bind settings with environment variables:
 
