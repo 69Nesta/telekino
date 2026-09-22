@@ -72,7 +72,12 @@ export function useRemote() {
 				case 'auth_denied':
 					window.localStorage.removeItem(`${TOKEN_KEY_PREFIX}${device.id}`)
 					setStatus('unauthorized')
-					setError(message.reason)
+					if (message.reason === 'This access token is no longer valid.') {
+						setError(null)
+                        connect(device)
+					} else {
+						setError(message.reason)
+					}
 					break
 				case 'ready':
 					setStatus('connected')

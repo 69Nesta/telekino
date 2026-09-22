@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { RadioTower } from 'lucide-react'
+import { ChangeDevice } from '@/components/ChangeDevice'
 import { DeviceManager } from '@/components/DeviceManager'
 import { PairingPanel } from '@/components/PairingPanel'
 import { RemoteControls } from '@/components/RemoteControls'
@@ -36,7 +37,7 @@ function App() {
           </div>
         </header>
         {isConnected ? (
-          <RemoteControls onCommand={remote.sendCommand} />
+          <RemoteControls onCommand={remote.sendCommand} connected={isConnected} />
         ) : (
           <>
             <PairingPanel status={remote.status} error={remote.error} onDisconnect={remote.disconnect} />
@@ -50,6 +51,7 @@ function App() {
         )}
         <p className="px-1 text-center text-xs text-muted-foreground">Commands are sent directly to the paired Mac.</p>
       </div>
+      <ChangeDevice onChangeDevice={remote.disconnect} connected={isConnected} />
       <Toaster position="top-center" />
     </main>
   )
