@@ -1,11 +1,22 @@
+import { useEffect } from 'react'
 import { RadioTower } from 'lucide-react'
 import { PairingPanel } from '@/components/PairingPanel'
 import { RemoteControls } from '@/components/RemoteControls'
+import { Toaster } from '@/components/ui/sonner'
 import { useRemote } from '@/hooks/useRemote'
+import { toast } from 'sonner'
 
 function App() {
   const remote = useRemote()
   const isConnected = remote.status === 'connected'
+
+  useEffect(() => {
+    if (remote.lastAck) toast.success(`Sent ${remote.lastAck.replaceAll('_', ' ')}`)
+  }, [remote.lastAck])
+
+  useEffect(() => {
+    if (remote.error) toast.error(remote.error)
+  }, [remote.error])
 
   return (
     <main className="min-h-svh overflow-hidden bg-[radial-gradient(circle_at_top_left,oklch(0.93_0.08_75),transparent_38%),linear-gradient(135deg,oklch(0.98_0.02_90),oklch(0.93_0.025_170))] px-4 py-8 text-foreground dark:bg-[radial-gradient(circle_at_top_left,oklch(0.28_0.07_75),transparent_38%),linear-gradient(135deg,oklch(0.16_0.02_90),oklch(0.12_0.025_170))] sm:px-6 sm:py-12">
@@ -20,7 +31,7 @@ function App() {
           </div>
         </header>
         {isConnected ? (
-          <RemoteControls lastAck={remote.lastAck} error={remote.error} onCommand={remote.sendCommand} />
+          <RemoteControls onCommand={remote.sendCommand} />
         ) : (
           <PairingPanel
             status={remote.status}
@@ -32,6 +43,7 @@ function App() {
         )}
         <p className="px-1 text-center text-xs text-muted-foreground">Commands are sent directly to the paired Mac.</p>
       </div>
+      <Toaster position="top-center" />
     </main>
   )
 }
