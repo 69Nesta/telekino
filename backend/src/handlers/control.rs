@@ -1,20 +1,10 @@
-use axum::{Json, http::StatusCode};
+use axum::http::StatusCode;
 use enigo::{Direction, Enigo, Key, Keyboard, Settings};
 
-use crate::{middleware::auth::Authenticated, models::control::ControlCommand};
-
-pub async fn handle_control(
-    _auth: Authenticated,
-    Json(cmd): Json<ControlCommand>,
-) -> Result<StatusCode, (StatusCode, String)> {
-    execute_control(cmd).await.map(|()| StatusCode::OK)
-}
+use crate::models::control::ControlCommand;
 
 pub async fn execute_control(cmd: ControlCommand) -> Result<(), (StatusCode, String)> {
-    // OS interactions (simulating keys) should run in spawn_blocking
-    // so they don't block the Tokio async runtime.
     tokio::task::spawn_blocking(move || {
-        // Initialize Enigo inside the task
         let mut enigo = Enigo::new(&Settings::default()).map_err(|e| {
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -22,7 +12,6 @@ pub async fn execute_control(cmd: ControlCommand) -> Result<(), (StatusCode, Str
             )
         })?;
 
-        // Map the API request to the corresponding Enigo Key
         let key = match cmd {
             ControlCommand::PlayPause => Key::MediaPlayPause,
             ControlCommand::NextTrack => Key::MediaNextTrack,
@@ -34,7 +23,6 @@ pub async fn execute_control(cmd: ControlCommand) -> Result<(), (StatusCode, Str
             ControlCommand::RightArrow => Key::RightArrow,
         };
 
-        // Simulate the physical click
         enigo.key(key, Direction::Click).map_err(|e| {
             (
                 StatusCode::INTERNAL_SERVER_ERROR,

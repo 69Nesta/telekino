@@ -67,6 +67,9 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
 
         let token = Uuid::new_v4().to_string();
         state.tokens.write().await.insert(token.clone());
+        println!("✅ Token: {}", token);
+        let _ = list_all_allowed_tokens(&state).await;
+
         if send_message(&mut socket, ServerMessage::AuthApproved { token })
             .await
             .is_err()
@@ -90,6 +93,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
         match serde_json::from_str(&message) {
             Ok(ClientMessage::Command { action }) => {
                 let action_name = action.name().to_string();
+                println!("Executing command {}", action_name);
                 match execute_control(action).await {
                     Ok(()) => {
                         if send_message(
@@ -159,4 +163,11 @@ fn prompt_for_approval(device_name: &str) -> bool {
     let mut input = String::new();
     std::io::stdin().read_line(&mut input).unwrap_or(0);
     input.trim().eq_ignore_ascii_case("y")
+}
+
+async fn list_all_allowed_tokens(state: &Arc<AppState>) {
+    let tokens = state.tokens.read().await;
+    for token in tokens.iter() {
+        println!("{}", token);
+    }
 }

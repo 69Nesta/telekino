@@ -1,11 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
-pub struct AuthRequest {
-    pub device_name: String,
-}
-
-#[derive(Debug, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ClientMessage {
     Auth {
@@ -26,9 +21,4 @@ pub enum ServerMessage {
     Ready,
     CommandAck { action: String },
     Error { message: String },
-}
-
-#[derive(Debug, Serialize)]
-pub struct AuthResponse {
-    pub token: String,
 }
