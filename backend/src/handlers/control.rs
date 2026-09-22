@@ -7,6 +7,10 @@ pub async fn handle_control(
     _auth: Authenticated,
     Json(cmd): Json<ControlCommand>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    execute_control(cmd).await.map(|()| StatusCode::OK)
+}
+
+pub async fn execute_control(cmd: ControlCommand) -> Result<(), (StatusCode, String)> {
     // OS interactions (simulating keys) should run in spawn_blocking
     // so they don't block the Tokio async runtime.
     tokio::task::spawn_blocking(move || {
@@ -48,5 +52,5 @@ pub async fn handle_control(
         )
     })??;
 
-    Ok(StatusCode::OK)
+    Ok(())
 }

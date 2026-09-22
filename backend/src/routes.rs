@@ -1,8 +1,4 @@
-use axum::{
-    Router,
-    http::Method,
-    routing::{get, post},
-};
+use axum::{Router, http::Method, routing::post};
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 
@@ -18,6 +14,7 @@ pub fn create_router(state: Arc<AppState>) -> Router {
     let app = Router::new()
         .route("/auth/request", post(handlers::auth::request_auth))
         .route("/api/control", post(handlers::control::handle_control))
+        .route("/ws", axum::routing::get(handlers::websocket::websocket))
         .with_state(state)
         .layer(cors)
         .fallback_service(ServeDir::new("../frontend/dist"));
