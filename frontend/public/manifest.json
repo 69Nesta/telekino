@@ -1,0 +1,28 @@
+{
+  "name": "Telekino",
+  "short_name": "Telekino",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "scope": "/",
+  "orientation": "any",
+  "theme_color": "#2d1b01",
+  "background_color": "#2d1b01",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
