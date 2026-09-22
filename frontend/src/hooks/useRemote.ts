@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getDefaultDeviceName } from '@/lib/device'
+import type { RemoteDevice } from '@/lib/device'
 import {
 	createAuthMessage,
 	createCommandMessage,
@@ -8,11 +8,11 @@ import {
 	type ServerMessage,
 } from '@/lib/protocol'
 
-const TOKEN_KEY = 'telekino-auth-token'
+const TOKEN_KEY_PREFIX = 'telekino-auth-token:'
 
-function getStoredToken(): string | null {
+function getStoredToken(device: RemoteDevice): string | null {
 	if (typeof window === 'undefined') return null
-	return window.localStorage.getItem(TOKEN_KEY)
+	return window.localStorage.getItem(`${TOKEN_KEY_PREFIX}${device.id}`)
 }
 
 function parseServerMessage(data: string): ServerMessage | null {
@@ -27,8 +27,8 @@ function parseServerMessage(data: string): ServerMessage | null {
 
 export function useRemote() {
 	const socketRef = useRef<WebSocket | null>(null)
-	const deviceNameRef = useRef(getDefaultDeviceName())
-	const [deviceName, setDeviceName] = useState(getDefaultDeviceName())
+	const deviceRef = useRef<RemoteDevice | null>(null)
+	const [activeDevice, setActiveDevice] = useState<RemoteDevice | null>(null)
 	const [status, setStatus] = useState<ConnectionStatus>('idle')
 	const [error, setError] = useState<string | null>(null)
 	const [lastAck, setLastAck] = useState<string | null>(null)
@@ -39,19 +39,19 @@ export function useRemote() {
 		setStatus('disconnected')
 	}, [])
 
-	const connect = useCallback((deviceName = deviceNameRef.current) => {
+	const connect = useCallback((device: RemoteDevice) => {
 		socketRef.current?.close()
-		deviceNameRef.current = deviceName.trim() || getDefaultDeviceName()
-		setDeviceName(deviceNameRef.current)
+		deviceRef.current = device
+		setActiveDevice(device)
 		setError(null)
 		setLastAck(null)
 		setStatus('connecting')
 
-		const socket = new WebSocket(`${window.location.origin.replace(/^http/, 'ws')}/ws`)
+		const socket = new WebSocket(device.address)
 		socketRef.current = socket
 
 		socket.addEventListener('open', () => {
-			socket.send(JSON.stringify(createAuthMessage(deviceNameRef.current, getStoredToken())))
+			socket.send(JSON.stringify(createAuthMessage(device.name, getStoredToken(device))))
 		})
 
 		socket.addEventListener('message', (event) => {
@@ -67,10 +67,10 @@ export function useRemote() {
 					setStatus('awaiting_approval')
 					break
 				case 'auth_approved':
-					window.localStorage.setItem(TOKEN_KEY, message.token)
+					window.localStorage.setItem(`${TOKEN_KEY_PREFIX}${device.id}`, message.token)
 					break
 				case 'auth_denied':
-					window.localStorage.removeItem(TOKEN_KEY)
+					window.localStorage.removeItem(`${TOKEN_KEY_PREFIX}${device.id}`)
 					setStatus('unauthorized')
 					setError(message.reason)
 					break
@@ -110,5 +110,5 @@ export function useRemote() {
 
 	useEffect(() => () => socketRef.current?.close(), [])
 
-	return { status, error, lastAck, connect, disconnect, sendCommand, deviceName }
+	return { status, error, lastAck, connect, disconnect, sendCommand, activeDevice }
 }

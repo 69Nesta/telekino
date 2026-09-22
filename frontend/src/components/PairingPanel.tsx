@@ -1,17 +1,14 @@
-import { useState } from 'react'
 import { LoaderCircle, MonitorUp, PlugZap, RotateCcw, ShieldCheck, Unplug } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { Spinner } from '@/components/ui/spinner'
 import type { ConnectionStatus } from '@/lib/protocol'
 import { statusCopy, statusTone } from '@/lib/protocol'
 
 type PairingPanelProps = {
   status: ConnectionStatus
   error: string | null
-  defaultDeviceName: string
-  onConnect: (deviceName: string) => void
   onDisconnect: () => void
 }
 
@@ -26,8 +23,7 @@ const statusIcons = {
   error: PlugZap,
 } as const
 
-export function PairingPanel({ status, error, defaultDeviceName, onConnect, onDisconnect }: PairingPanelProps) {
-  const [deviceName, setDeviceName] = useState(defaultDeviceName)
+export function PairingPanel({ status, error, onDisconnect }: PairingPanelProps) {
   const StatusIcon = statusIcons[status]
   const isBusy = status === 'connecting' || status === 'awaiting_approval'
   const isConnected = status === 'connected'
@@ -42,31 +38,24 @@ export function PairingPanel({ status, error, defaultDeviceName, onConnect, onDi
           <Badge variant={statusTone[status]}>{statusCopy[status]}</Badge>
         </div>
         <div>
-          <CardTitle className="text-2xl tracking-tight">Pair this remote</CardTitle>
+          <CardTitle className="text-2xl tracking-tight">Connect a Mac</CardTitle>
           <CardDescription className="mt-2 max-w-sm leading-relaxed">
-            Connect to the Telekino host, then approve this device from the Mac terminal.
+            Select a configured Mac below, then approve this remote from the host terminal.
           </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <label className="grid gap-2 text-sm font-medium" htmlFor="device-name">
-          Device name
-          <Input
-            id="device-name"
-            value={deviceName}
-            onChange={(event) => setDeviceName(event.target.value)}
-            placeholder="Mac Remote"
-            disabled={isBusy || isConnected}
-          />
-        </label>
         {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
         {status === 'awaiting_approval' && (
-          <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
-            Check the host computer and approve the connection request.
-          </p>
+            <div className="rounded-lg bg-amber-500/10 px-3 py-2 flex items-center gap-2">
+                <Spinner className="text-amber-200" />
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                    Check the host computer and approve the connection request.
+                </p>
+            </div>
         )}
-        <Button className="w-full" onClick={() => isConnected ? onDisconnect() : onConnect(deviceName)} disabled={isBusy}>
-          {isConnected ? 'Disconnect' : status === 'unauthorized' || status === 'error' ? 'Try again' : 'Connect to Mac'}
+        <Button className="w-full" onClick={onDisconnect} disabled={isBusy || !isConnected} variant={isConnected ? 'destructive' : 'outline'}>
+          {isConnected ? 'Disconnect' : 'Choose a Mac below'}
         </Button>
       </CardContent>
     </Card>

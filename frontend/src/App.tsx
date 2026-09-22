@@ -1,14 +1,19 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { RadioTower } from 'lucide-react'
+import { DeviceManager } from '@/components/DeviceManager'
 import { PairingPanel } from '@/components/PairingPanel'
 import { RemoteControls } from '@/components/RemoteControls'
 import { Toaster } from '@/components/ui/sonner'
 import { useRemote } from '@/hooks/useRemote'
+import { loadDevices, saveDevices, type RemoteDevice } from '@/lib/device'
 import { toast } from 'sonner'
 
 function App() {
   const remote = useRemote()
+  const [devices, setDevices] = useState<RemoteDevice[]>(loadDevices)
   const isConnected = remote.status === 'connected'
+
+  useEffect(() => saveDevices(devices), [devices])
 
   useEffect(() => {
     if (remote.lastAck) toast.success(`Sent ${remote.lastAck.replaceAll('_', ' ')}`)
@@ -33,13 +38,15 @@ function App() {
         {isConnected ? (
           <RemoteControls onCommand={remote.sendCommand} />
         ) : (
-          <PairingPanel
-            status={remote.status}
-            error={remote.error}
-            defaultDeviceName={remote.deviceName}
-            onConnect={remote.connect}
-            onDisconnect={remote.disconnect}
-          />
+          <>
+            <PairingPanel status={remote.status} error={remote.error} onDisconnect={remote.disconnect} />
+            <DeviceManager
+              devices={devices}
+              activeDeviceId={remote.activeDevice?.id ?? null}
+              onChange={setDevices}
+              onConnect={remote.connect}
+            />
+          </>
         )}
         <p className="px-1 text-center text-xs text-muted-foreground">Commands are sent directly to the paired Mac.</p>
       </div>
