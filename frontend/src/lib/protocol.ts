@@ -21,10 +21,15 @@ export type ControlAction =
   | 'click'
   | 'right_click'
   | 'scroll'
+  | 'open_url'
+
+export type CommandActionPayload =
+  | { action: Exclude<ControlAction, 'open_url'> }
+  | { action: 'open_url'; url: string }
 
 export type ClientMessage =
   | { type: 'auth'; device_name: string; token: string | null }
-  | { type: 'command'; action: { action: ControlAction }, args: Record<string, number> }
+  | { type: 'command'; action: CommandActionPayload; args?: Record<string, number> }
 
 export type ServerMessage =
   | { type: 'auth_pending' }
@@ -60,6 +65,10 @@ export function createAuthMessage(deviceName: string, token: string | null): Cli
   return { type: 'auth', device_name: deviceName, token }
 }
 
-export function createCommandMessage(action: ControlAction, args: Record<string, number> = {}): ClientMessage {
+export function createCommandMessage(action: Exclude<ControlAction, 'open_url'>, args: Record<string, number> = {}): ClientMessage {
   return { type: 'command', action: { action }, args }
+}
+
+export function createOpenUrlMessage(url: string): ClientMessage {
+  return { type: 'command', action: { action: 'open_url', url }, args: {} }
 }

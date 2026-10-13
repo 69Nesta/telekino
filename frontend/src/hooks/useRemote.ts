@@ -3,6 +3,7 @@ import type { RemoteDevice } from '@/lib/device'
 import {
 	createAuthMessage,
 	createCommandMessage,
+	createOpenUrlMessage,
 	type ConnectionStatus,
 	type ControlAction,
 	type ServerMessage,
@@ -28,6 +29,7 @@ function parseServerMessage(data: string): ServerMessage | null {
 export function useRemote() {
 	const socketRef = useRef<WebSocket | null>(null)
 	const deviceRef = useRef<RemoteDevice | null>(null)
+	const connectRef = useRef<(device: RemoteDevice) => void>(() => {})
 	const [activeDevice, setActiveDevice] = useState<RemoteDevice | null>(null)
 	const [status, setStatus] = useState<ConnectionStatus>('idle')
 	const [error, setError] = useState<string | null>(null)
@@ -74,7 +76,7 @@ export function useRemote() {
 					setStatus('unauthorized')
 					if (message.reason === 'This access token is no longer valid.') {
 						setError(null)
-                        connect(device)
+						connectRef.current(device)
 					} else {
 						setError(message.reason)
 					}
@@ -106,14 +108,26 @@ export function useRemote() {
 		})
 	}, [])
 
-	const sendCommand = useCallback((action: ControlAction, args: Record<string, number> = {}) => {
+	useEffect(() => {
+		connectRef.current = connect
+	}, [connect])
+
+	const sendCommand = useCallback((action: Exclude<ControlAction, 'open_url'>, args: Record<string, number> = {}) => {
 		const socket = socketRef.current
 		if (status !== 'connected' || socket?.readyState !== WebSocket.OPEN) return false
 		socket.send(JSON.stringify(createCommandMessage(action, args)))
 		return true
 	}, [status])
 
+	const openUrl = useCallback((url: string) => {
+		const socket = socketRef.current
+		if (status !== 'connected' || socket?.readyState !== WebSocket.OPEN) return false
+		socket.send(JSON.stringify(createOpenUrlMessage(url)))
+		return true
+	}, [status])
+
 	useEffect(() => () => socketRef.current?.close(), [])
 
-	return { status, error, lastAck, connect, disconnect, sendCommand, activeDevice }
+	return { status, error, lastAck, connect, disconnect, sendCommand, openUrl, activeDevice }
 }
+

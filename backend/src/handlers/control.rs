@@ -8,6 +8,10 @@ pub async fn execute_control(
     cmd: ControlCommand,
     args: HashMap<String, f32>,
 ) -> Result<(), (StatusCode, String)> {
+    if let ControlCommand::OpenUrl { url } = cmd {
+        return open_in_browser(&url);
+    }
+
     tokio::task::spawn_blocking(move || {
         let mut enigo = Enigo::new(&Settings::default()).map_err(|e| {
             (
@@ -83,7 +87,10 @@ pub async fn execute_control(
                     ControlCommand::LeftArrow => Key::LeftArrow,
                     ControlCommand::RightArrow => Key::RightArrow,
                     ControlCommand::Trackpad => unreachable!(),
-                    ControlCommand::Click | ControlCommand::RightClick | ControlCommand::Scroll => unreachable!(),
+                    ControlCommand::Click
+                    | ControlCommand::RightClick
+                    | ControlCommand::Scroll
+                    | ControlCommand::OpenUrl { .. } => unreachable!(),
                 };
 
                 enigo.key(key, Direction::Click).map_err(|e| {
@@ -93,6 +100,7 @@ pub async fn execute_control(
                     )
                 })?;
             }
+            ControlCommand::OpenUrl { .. } => unreachable!(),
         }
 
         Ok::<(), (StatusCode, String)>(())
@@ -106,4 +114,44 @@ pub async fn execute_control(
     })??;
 
     Ok(())
+}
+
+fn open_in_browser(url: &str) -> Result<(), (StatusCode, String)> {
+    let target = url.trim();
+    if target.is_empty() {
+        return Err((StatusCode::BAD_REQUEST, "URL cannot be empty".to_string()));
+    }
+
+    let formatted = if target.starts_with("http://") || target.starts_with("https://") {
+        target.to_string()
+    } else {
+        format!("https://{}", target)
+    };
+
+    #[cfg(target_os = "macos")]
+    let status = std::process::Command::new("open")
+        .arg(&formatted)
+        .status();
+
+    #[cfg(target_os = "windows")]
+    let status = std::process::Command::new("cmd")
+        .args(["/C", "start", &formatted])
+        .status();
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    let status = std::process::Command::new("xdg-open")
+        .arg(&formatted)
+        .status();
+
+    match status {
+        Ok(exit) if exit.success() => Ok(()),
+        Ok(exit) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Browser command exited with status: {:?}", exit.code()),
+        )),
+        Err(err) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Failed to launch browser: {}", err),
+        )),
+    }
 }

@@ -16,6 +16,7 @@ pub enum ControlCommand {
     Click,
     RightClick,
     Scroll,
+    OpenUrl { url: String },
 }
 
 impl ControlCommand {
@@ -33,6 +34,7 @@ impl ControlCommand {
             Self::Click => "click",
             Self::RightClick => "right_click",
             Self::Scroll => "scroll",
+            Self::OpenUrl { .. } => "open_url",
         }
     }
 }

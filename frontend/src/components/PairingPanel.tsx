@@ -47,12 +47,12 @@ export function PairingPanel({ status, error, onDisconnect }: PairingPanelProps)
       <CardContent className="space-y-4">
         {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
         {status === 'awaiting_approval' && (
-            <div className="rounded-lg bg-amber-500/10 px-3 py-2 flex items-center gap-2">
-                <Spinner className="text-amber-200" />
-                <p className="text-sm text-amber-800 dark:text-amber-200">
-                    Check the host computer and approve the connection request.
-                </p>
-            </div>
+          <div className="rounded-lg bg-amber-500/10 px-3 py-2 flex items-center gap-2">
+            <Spinner className="text-amber-200" />
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              Check the host computer and approve the connection request.
+            </p>
+          </div>
         )}
         <Button className="w-full" onClick={onDisconnect} disabled={isBusy || !isConnected} variant={isConnected ? 'destructive' : 'outline'}>
           {isConnected ? 'Disconnect' : 'Choose a Mac below'}

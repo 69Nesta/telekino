@@ -4,7 +4,7 @@ import type { ControlAction } from '@/lib/protocol'
 
 type TrackpadControlsProps = {
   disabled: boolean
-  onCommand: (action: ControlAction, args: Record<string, number>) => void
+  onCommand: (action: Exclude<ControlAction, 'open_url'>, args: Record<string, number>) => void
 }
 
 type PointerPosition = { x: number; y: number; startX: number; startY: number; pointerType: string; button: number }
@@ -152,7 +152,7 @@ export function TrackpadControls({ disabled, onCommand }: TrackpadControlsProps)
       </h2>
       <div
         role="application"
-        aria-label="Trackpad de contrôle : glisser pour déplacer, toucher pour cliquer, appui long pour clic droit, deux doigts pour défiler"
+        aria-label="Trackpad control: drag to move, tap to click, long press to right click, two fingers to scroll"
         aria-disabled={disabled}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -177,7 +177,7 @@ export function TrackpadControls({ disabled, onCommand }: TrackpadControlsProps)
           <div className="absolute left-0 top-1/2 h-px w-full bg-border" />
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="rounded-full border border-border bg-background/80 px-3 py-1 text-center text-xs text-muted-foreground">
-              {disabled ? 'Desactivate' : 'Slide · Touch to click · 2 fingers to scroll'}
+              {disabled ? 'Disabled' : 'Drag · Tap to click · Two fingers to scroll'}
             </span>
           </div>
         </div>

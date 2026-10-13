@@ -1,13 +1,11 @@
 use std::collections::HashSet;
 use tokio::sync::RwLock;
 
-// --- Shared Application State ---
 #[derive(Default)]
 pub struct AppState {
     pub tokens: RwLock<HashSet<String>>,
 }
 
-// --- Environment Variables ---
 
 const DEFAULT_HOST: &str = "0.0.0.0";
 const DEFAULT_PORT: u16 = 4242;

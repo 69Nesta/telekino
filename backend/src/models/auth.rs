@@ -11,7 +11,8 @@ pub enum ClientMessage {
     },
     Command {
         action: crate::models::control::ControlCommand,
-        args: HashMap<String, f32>
+        #[serde(default)]
+        args: HashMap<String, f32>,
     },
 }
 
