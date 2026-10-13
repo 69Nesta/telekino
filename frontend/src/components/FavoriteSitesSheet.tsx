@@ -10,7 +10,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import { BrandIcon } from '@/components/BrandIcon'
+import { cleanUrl } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -37,19 +37,6 @@ type FavoriteSitesSheetProps = {
   disabled: boolean
 }
 
-const COLOR_OPTIONS = [
-  '#E50914',
-  '#FF0000',
-  '#1DB954',
-  '#9146FF',
-  '#113CCF',
-  '#00A8E1',
-  '#10A37F',
-  '#F47521',
-  '#FF5500',
-  '#262626',
-]
-
 export function FavoriteSitesSheet({
   favorites,
   onUpdateFavorites,
@@ -61,7 +48,6 @@ export function FavoriteSitesSheet({
   const [isAdding, setIsAdding] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newUrl, setNewUrl] = useState('')
-  const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0])
   const [quickUrl, setQuickUrl] = useState('')
   const [launchingId, setLaunchingId] = useState<string | null>(null)
 
@@ -110,7 +96,7 @@ export function FavoriteSitesSheet({
     }
 
     const title = newTitle.trim() || new URL(normalizeUrl(trimmedUrl)).hostname.replace('www.', '')
-    const site = createFavoriteSite(title, trimmedUrl, selectedColor)
+    const site = createFavoriteSite(title, trimmedUrl)
     const updated = [...favorites, site]
     onUpdateFavorites(updated)
     toast.success(`Added ${site.title} to favorites`)
@@ -131,7 +117,7 @@ export function FavoriteSitesSheet({
       return
     }
 
-    const site = createFavoriteSite(preset.title, preset.url, preset.color, preset.category)
+    const site = createFavoriteSite(preset.title, preset.url, preset.category)
     const updated = [...favorites, site]
     onUpdateFavorites(updated)
     toast.success(`Added ${preset.title}`)
@@ -267,25 +253,6 @@ export function FavoriteSitesSheet({
               </div>
 
               <div>
-                <p className="mb-1.5 text-[11px] font-medium text-muted-foreground">Tile accent color</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {COLOR_OPTIONS.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setSelectedColor(color)}
-                      style={{ backgroundColor: color }}
-                      className={`size-6 rounded-full border transition-all ${selectedColor === color
-                        ? 'scale-110 border-white ring-2 ring-primary ring-offset-1'
-                        : 'border-transparent opacity-80 hover:opacity-100'
-                        }`}
-                      aria-label={`Select color ${color}`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div>
                 <p className="mb-1.5 text-[11px] font-medium text-muted-foreground">
                   Quick add popular services
                 </p>
@@ -299,7 +266,6 @@ export function FavoriteSitesSheet({
                     >
                       <span
                         className="size-2 rounded-full"
-                        style={{ backgroundColor: preset.color }}
                       />
                       + {preset.title}
                     </button>
@@ -354,20 +320,14 @@ export function FavoriteSitesSheet({
                       }`}
                   >
                     <div
-                      className="flex size-10 items-center justify-center rounded-xl text-white shadow-inner transition-transform group-hover:scale-105"
-                      style={{
-                        backgroundColor: site.color,
-                        boxShadow: `0 4px 12px -2px ${site.color}40`,
-                      }}
+                      className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-lg text-white shadow-inner transition-transform group-hover:scale-105"
                     >
                       {isLaunching ? (
-                        <Loader2 className="size-5 animate-spin text-white" />
+                        <Loader2 className="size-3.5 animate-spin text-white" />
                       ) : (
-                        <BrandIcon
-                          title={site.title}
-                          url={site.url}
-                          badge={site.badge}
-                          className="size-5"
+                        <img
+                          src={`https://unavatar.io/${cleanUrl(site.url)}`}
+                          className="size-full object-cover"
                         />
                       )}
                     </div>
