@@ -9,6 +9,9 @@ import {
 	type ServerMessage,
 } from '@/lib/protocol'
 
+import { useAppDispatch } from "@/store/hooks"
+import { setHomeStats } from '@/store/reducers/homeSlice'
+
 const TOKEN_KEY_PREFIX = 'telekino-auth-token:'
 
 function getStoredToken(device: RemoteDevice): string | null {
@@ -27,6 +30,7 @@ function parseServerMessage(data: string): ServerMessage | null {
 }
 
 export function useRemote() {
+	const dispatch = useAppDispatch();
 	const socketRef = useRef<WebSocket | null>(null)
 	const deviceRef = useRef<RemoteDevice | null>(null)
 	const connectRef = useRef<(device: RemoteDevice) => void>(() => {})
@@ -92,6 +96,9 @@ export function useRemote() {
 				case 'error':
 					setError(message.message)
 					break
+				case 'average_color':
+					dispatch(setHomeStats(message.color))
+
 			}
 		})
 

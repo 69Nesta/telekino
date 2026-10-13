@@ -38,6 +38,7 @@ export type ServerMessage =
   | { type: 'ready' }
   | { type: 'command_ack'; action: string }
   | { type: 'error'; message: string }
+  | { type: 'average_color', color: any}
 
 export const statusCopy: Record<ConnectionStatus, string> = {
   idle: 'Ready to pair',
