@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
-import { BrandIcon } from '@/components/BrandIcon'
 import { FavoriteSitesSheet } from '@/components/FavoriteSitesSheet'
 import type { FavoriteSite } from '@/lib/favorites'
 import { toast } from 'sonner'
+import { cleanUrl } from '@/lib/utils'
 
 type QuickAppsStripProps = {
   favorites: FavoriteSite[]
@@ -37,6 +37,7 @@ export function QuickAppsStrip({
     }, 1000)
   }
 
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between px-0.5">
@@ -68,20 +69,14 @@ export function QuickAppsStrip({
               }`}
             >
               <div
-                className="flex size-7 shrink-0 items-center justify-center rounded-lg text-white shadow-inner transition-transform group-hover:scale-105"
-                style={{
-                  backgroundColor: site.color,
-                  boxShadow: `0 2px 8px -1px ${site.color}50`,
-                }}
+                className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-lg text-white shadow-inner transition-transform group-hover:scale-105"
               >
                 {isLaunching ? (
                   <Loader2 className="size-3.5 animate-spin text-white" />
                 ) : (
-                  <BrandIcon
-                    title={site.title}
-                    url={site.url}
-                    badge={site.badge}
-                    className="size-3.5"
+                  <img
+                    src={`https://unavatar.io/${cleanUrl(site.url)}`}
+                    className="size-full object-cover"
                   />
                 )}
               </div>
