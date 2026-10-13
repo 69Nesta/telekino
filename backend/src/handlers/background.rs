@@ -21,8 +21,8 @@ pub fn start_capture(state: Arc<AppState>) {
                 .into_iter()
                 .next()
                 .ok_or("No display found")?;
-            let width = display.width() as usize;
-            let height = display.height() as usize;
+            let width = display.width();
+            let height = display.height();
             let filter = SCContentFilter::create()
                 .with_display(&display)
                 .with_excluding_windows(&[])
