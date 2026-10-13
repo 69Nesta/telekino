@@ -38,7 +38,7 @@ export function DeviceManager({ devices, activeDeviceId, onChange, onConnect }: 
   }
 
   return (
-    <Card className="border-black/10 bg-white/75 shadow-xl shadow-black/5 backdrop-blur dark:border-white/10 dark:bg-white/5">
+    <Card className="relative border-white/10 bg-white/80 shadow-2xl backdrop-blur-2xl dark:border-white/15 dark:bg-zinc-900/75 transition-all duration-700 [box-shadow:0_25px_60px_-15px_rgba(0,0,0,0.6),0_0_35px_-5px_var(--ambient-card-glow,transparent)]">
       <CardHeader>
         <CardTitle className="text-2xl tracking-tight">Your Macs</CardTitle>
         <CardDescription>Save the address of each Telekino host you want to control.</CardDescription>

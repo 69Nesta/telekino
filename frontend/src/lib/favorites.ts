@@ -13,6 +13,14 @@ export const FAVORITES_STORAGE_KEY = 'telekino-favorite-sites'
 
 export const PRESET_FAVORITES: FavoriteSite[] = [
   {
+    id: 'fav-canal',
+    title: 'Canal+',
+    url: 'https://www.canalplus.com',
+    badge: 'C+',
+    color: '#1a1a1a',
+    category: 'streaming',
+  },
+  {
     id: 'fav-youtube',
     title: 'YouTube',
     url: 'https://www.youtube.com',

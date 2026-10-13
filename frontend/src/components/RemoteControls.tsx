@@ -43,7 +43,7 @@ export function RemoteControls({
   }
 
   return (
-    <Card className="border-black/10 bg-white/80 shadow-2xl shadow-black/5 backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/80">
+    <Card className="relative border-white/10 bg-white/80 shadow-2xl backdrop-blur-2xl dark:border-white/15 dark:bg-zinc-900/75 transition-all duration-700 [box-shadow:0_25px_60px_-15px_rgba(0,0,0,0.6),0_0_40px_-5px_var(--ambient-card-glow,transparent)]">
       <CardHeader className="flex flex-row items-center justify-between gap-4 pb-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">

@@ -8,13 +8,30 @@ use std::time::{Duration, Instant};
 #[cfg(target_os = "macos")]
 const SMOOTHING: f32 = 0.18;
 
+#[cfg(target_os = "macos")]
+fn is_safari_active() -> bool {
+    let output = std::process::Command::new("osascript")
+        .args([
+            "-e",
+            "tell application \"System Events\" to exists (processes whose bundle identifier is \"com.apple.Safari\" and frontmost is true)",
+        ])
+        .output();
+
+    if let Ok(output) = output {
+        if output.status.success() {
+            let res = String::from_utf8_lossy(&output.stdout);
+            return res.trim() == "true";
+        }
+    }
+    false
+}
 
 #[cfg(target_os = "macos")]
 pub fn start_capture(state: Arc<AppState>) {
     std::thread::spawn(move || {
         use screencapturekit::prelude::*;
 
-        let result = (|| -> Result<(), Box<dyn std::error::Error>> {
+        let create_stream = |output: &tokio::sync::watch::Sender<Rgb>| -> Result<SCStream, Box<dyn std::error::Error>> {
             let content = SCShareableContent::get()?;
             let display = content
                 .displays()
@@ -36,7 +53,7 @@ pub fn start_capture(state: Arc<AppState>) {
             let last_emit = Arc::new(std::sync::Mutex::new(
                 Instant::now() - Duration::from_secs(1),
             ));
-            let output = state.average_color.clone();
+            let output = output.clone();
             let mut stream = SCStream::new(&filter, &config)?;
             stream.add_output_handler(
                 move |sample: CMSampleBuffer, _: SCStreamOutputType| {
@@ -103,12 +120,32 @@ pub fn start_capture(state: Arc<AppState>) {
                 SCStreamOutputType::Screen,
             )?;
             stream.start_capture()?;
-            loop {
-                std::thread::sleep(Duration::from_secs(3600));
+            Ok(stream)
+        };
+
+        let output = state.average_color.clone();
+        let mut active_stream: Option<SCStream> = None;
+
+        loop {
+            let safari_active = is_safari_active();
+
+            if safari_active {
+                if let Some(stream) = active_stream.take() {
+                    let _ = stream.stop_capture();
+                    let _ = output.send(Rgb { r: 24, g: 30, b: 46 });
+                }
+            } else if active_stream.is_none() {
+                match create_stream(&output) {
+                    Ok(stream) => {
+                        active_stream = Some(stream);
+                    }
+                    Err(e) => {
+                        eprintln!("Screen capture error: {e}");
+                    }
+                }
             }
-        })();
-        if let Err(error) = result {
-            eprintln!("Screen capture could not start: {error}");
+
+            std::thread::sleep(Duration::from_millis(1000));
         }
     });
 }

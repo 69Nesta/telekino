@@ -168,8 +168,8 @@ export function TrackpadControls({ disabled, onCommand }: TrackpadControlsProps)
         }}
         className={[
           'relative aspect-[4/3] w-full overflow-hidden rounded-2xl',
-          'border border-border bg-muted/40 touch-none select-none transition-colors',
-          disabled ? 'cursor-not-allowed opacity-50' : 'cursor-crosshair hover:bg-muted/60',
+          'border border-white/10 bg-white/5 backdrop-blur-sm touch-none select-none transition-all',
+          disabled ? 'cursor-not-allowed opacity-50' : 'cursor-crosshair hover:bg-white/10 hover:border-white/20',
         ].join(' ')}
       >
         <div className="pointer-events-none absolute inset-0">
