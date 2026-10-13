@@ -16,6 +16,7 @@ use tokio::signal;
 async fn main() {
     let config = ServerConfig::from_env();
     let state = Arc::new(AppState::default());
+    handlers::background::start_capture(state.clone());
     let app = create_router(state);
     let bind_address = format!("{}:{}", config.host, config.port);
 

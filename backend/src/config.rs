@@ -1,11 +1,22 @@
+use crate::models::background::Rgb;
 use std::collections::HashSet;
 use tokio::sync::RwLock;
+use tokio::sync::watch;
 
-#[derive(Default)]
 pub struct AppState {
     pub tokens: RwLock<HashSet<String>>,
+    pub average_color: watch::Sender<Rgb>,
 }
 
+impl Default for AppState {
+    fn default() -> Self {
+        let (average_color, _) = watch::channel(Rgb::default());
+        Self {
+            tokens: RwLock::new(HashSet::new()),
+            average_color,
+        }
+    }
+}
 
 const DEFAULT_HOST: &str = "0.0.0.0";
 const DEFAULT_PORT: u16 = 4242;

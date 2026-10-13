@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-
 #[derive(Debug, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ClientMessage {
@@ -20,9 +19,20 @@ pub enum ClientMessage {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ServerMessage {
     AuthPending,
-    AuthApproved { token: String },
-    AuthDenied { reason: String },
+    AuthApproved {
+        token: String,
+    },
+    AuthDenied {
+        reason: String,
+    },
     Ready,
-    CommandAck { action: String },
-    Error { message: String },
+    AverageColor {
+        color: crate::models::background::Rgb,
+    },
+    CommandAck {
+        action: String,
+    },
+    Error {
+        message: String,
+    },
 }

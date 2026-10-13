@@ -13,3 +13,6 @@ uuid = { version = "1.0", features = ["v4"] }
 enigo = "0.6.1"
 tower-http = { version = "0.7.1", features = ["fs", "cors"] }
 colored = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+screencapturekit = "11.0.0"

@@ -95,7 +95,22 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<AppState>) {
         return;
     }
 
-    while let Some(Ok(message)) = socket.next().await {
+    let mut average_color = state.average_color.subscribe();
+    loop {
+        let message = tokio::select! {
+            message = socket.next() => match message {
+                Some(Ok(message)) => message,
+                _ => break,
+            },
+            changed = average_color.changed() => {
+                if changed.is_err() { break; }
+                let color = *average_color.borrow();
+                if send_message(&mut socket, ServerMessage::AverageColor { color }).await.is_err() {
+                    break;
+                }
+                continue;
+            }
+        };
         let Message::Text(message) = message else {
             continue;
         };
