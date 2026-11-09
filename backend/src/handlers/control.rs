@@ -21,6 +21,10 @@ pub async fn execute_control(
         })?;
 
         match cmd {
+            ControlCommand::Keyboard => {
+                enigo.key(Key::Unicode('v'), Direction::Click);
+            }
+
             ControlCommand::Trackpad => {
                 if let (Some(&x), Some(&y)) =
                     (args.get("x"), args.get("y"))
@@ -88,6 +92,7 @@ pub async fn execute_control(
                     ControlCommand::LeftArrow => Key::LeftArrow,
                     ControlCommand::RightArrow => Key::RightArrow,
                     ControlCommand::Trackpad => unreachable!(),
+                    ControlCommand::Keyboard => unreachable!(),
                     ControlCommand::Click
                     | ControlCommand::RightClick
                     | ControlCommand::Scroll
@@ -100,10 +105,6 @@ pub async fn execute_control(
                         format!("Failed to press key: {}", e),
                     )
                 })?;
-            }
-
-            ControlCommand::Keyboard => {
-                enigo.key(Key::Unicode('v'), Direction::Click);
             }
             ControlCommand::OpenUrl { .. } => unreachable!(),
         }
