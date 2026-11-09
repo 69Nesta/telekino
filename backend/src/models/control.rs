@@ -1,5 +1,22 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SpecialKey {
+    Backspace,
+    Enter,
+    Tab,
+    Escape,
+    Delete,
+    Up,
+    Down,
+    Left,
+    Right,
+    Home,
+    End,
+    Space,
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "action", rename_all = "snake_case")]
 pub enum ControlCommand {
@@ -17,7 +34,8 @@ pub enum ControlCommand {
     RightClick,
     Scroll,
     OpenUrl { url: String },
-    Keyboard,
+    Keyboard { text: String },
+    KeyPress { key: SpecialKey },
 }
 
 impl ControlCommand {
@@ -36,7 +54,8 @@ impl ControlCommand {
             Self::RightClick => "right_click",
             Self::Scroll => "scroll",
             Self::OpenUrl { .. } => "open_url",
-            Self::Keyboard => "keyboard",
+            Self::Keyboard { .. } => "keyboard",
+            Self::KeyPress { .. } => "key_press",
         }
     }
 }

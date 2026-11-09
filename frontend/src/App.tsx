@@ -57,6 +57,8 @@ function App() {
           <RemoteControls
             onCommand={remote.sendCommand}
             onOpenUrl={remote.openUrl}
+            onTypeText={remote.typeText}
+            onPressKey={remote.pressKey}
             connected={isConnected}
             deviceName={remote.activeDevice?.name}
           />

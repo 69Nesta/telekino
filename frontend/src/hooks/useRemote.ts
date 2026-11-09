@@ -3,13 +3,18 @@ import type { RemoteDevice } from '@/lib/device'
 import {
 	createAuthMessage,
 	createCommandMessage,
+	createKeyPressMessage,
+	createTypeTextMessage,
 	createOpenUrlMessage,
 	type ConnectionStatus,
+	type ClientMessage,
 	type ControlAction,
 	type ServerMessage,
+	type SpecialKey,
 } from '@/lib/protocol'
 
 const TOKEN_KEY_PREFIX = 'telekino-auth-token:'
+const SILENT_ACKS = new Set(['track_pad', 'scroll', 'keyboard', 'key_press'])
 
 function getStoredToken(device: RemoteDevice): string | null {
 	if (typeof window === 'undefined') return null
@@ -86,7 +91,7 @@ export function useRemote() {
 					setError(null)
 					break
 				case 'command_ack':
-					if (message.action !== 'track_pad' && message.action !== 'scroll') setLastAck(message.action)
+					if (!SILENT_ACKS.has(message.action)) setLastAck(message.action)
 					setError(null)
 					break
 				case 'error':
@@ -112,22 +117,26 @@ export function useRemote() {
 		connectRef.current = connect
 	}, [connect])
 
-	const sendCommand = useCallback((action: Exclude<ControlAction, 'open_url'>, args: Record<string, number> = {}) => {
+	const send = useCallback((message: ClientMessage) => {
 		const socket = socketRef.current
 		if (status !== 'connected' || socket?.readyState !== WebSocket.OPEN) return false
-		socket.send(JSON.stringify(createCommandMessage(action, args)))
+		socket.send(JSON.stringify(message))
 		return true
 	}, [status])
 
-	const openUrl = useCallback((url: string) => {
-		const socket = socketRef.current
-		if (status !== 'connected' || socket?.readyState !== WebSocket.OPEN) return false
-		socket.send(JSON.stringify(createOpenUrlMessage(url)))
-		return true
-	}, [status])
+	const sendCommand = useCallback(
+		(action: Exclude<ControlAction, 'open_url'>, args: Record<string, number> = {}) => send(createCommandMessage(action, args)),
+		[send],
+	)
+
+	const openUrl = useCallback((url: string) => send(createOpenUrlMessage(url)), [send])
+
+	const typeText = useCallback((text: string) => text.length > 0 && send(createTypeTextMessage(text)), [send])
+
+	const pressKey = useCallback((key: SpecialKey, repeat = 1) => send(createKeyPressMessage(key, repeat)), [send])
 
 	useEffect(() => () => socketRef.current?.close(), [])
 
-	return { status, error, lastAck, connect, disconnect, sendCommand, openUrl, activeDevice }
+	return { status, error, lastAck, connect, disconnect, sendCommand, openUrl, typeText, pressKey, activeDevice }
 }
 

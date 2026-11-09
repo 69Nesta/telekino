@@ -16,7 +16,6 @@ export type ControlAction =
   | 'volume_down'
   | 'volume_mute'
   | 'left_arrow'
-  | 'keyboard'
   | 'right_arrow'
   | 'track_pad'
   | 'click'
@@ -24,9 +23,25 @@ export type ControlAction =
   | 'scroll'
   | 'open_url'
 
+export type SpecialKey =
+  | 'backspace'
+  | 'enter'
+  | 'tab'
+  | 'escape'
+  | 'delete'
+  | 'up'
+  | 'down'
+  | 'left'
+  | 'right'
+  | 'home'
+  | 'end'
+  | 'space'
+
 export type CommandActionPayload =
   | { action: Exclude<ControlAction, 'open_url'> }
   | { action: 'open_url'; url: string }
+  | { action: 'keyboard'; text: string }
+  | { action: 'key_press'; key: SpecialKey }
 
 export type ClientMessage =
   | { type: 'auth'; device_name: string; token: string | null }
@@ -72,4 +87,12 @@ export function createCommandMessage(action: Exclude<ControlAction, 'open_url'>,
 
 export function createOpenUrlMessage(url: string): ClientMessage {
   return { type: 'command', action: { action: 'open_url', url }, args: {} }
+}
+
+export function createTypeTextMessage(text: string): ClientMessage {
+  return { type: 'command', action: { action: 'keyboard', text }, args: {} }
+}
+
+export function createKeyPressMessage(key: SpecialKey, repeat = 1): ClientMessage {
+  return { type: 'command', action: { action: 'key_press', key }, args: repeat > 1 ? { repeat } : {} }
 }

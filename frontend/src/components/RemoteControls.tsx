@@ -9,11 +9,13 @@ import { NavigationControls } from '@/components/NavigationControls'
 import { TrackpadControls } from '@/components/TrackpadControls'
 import { VolumeControls } from '@/components/VolumeControls'
 import { loadFavorites, saveFavorites, type FavoriteSite } from '@/lib/favorites'
-import type { ControlAction } from '@/lib/protocol'
+import type { ControlAction, SpecialKey } from '@/lib/protocol'
 
 type RemoteControlsProps = {
   onCommand: (action: Exclude<ControlAction, 'open_url'>, args: Record<string, number>) => void
   onOpenUrl: (url: string) => void
+  onTypeText: (text: string) => void
+  onPressKey: (key: SpecialKey, repeat?: number) => void
   connected: boolean
   deviceName?: string
 }
@@ -21,6 +23,8 @@ type RemoteControlsProps = {
 export function RemoteControls({
   onCommand,
   onOpenUrl,
+  onTypeText,
+  onPressKey,
   connected,
   deviceName,
 }: RemoteControlsProps) {
@@ -102,7 +106,11 @@ export function RemoteControls({
             </Button>
           </div>
         </div>
-        <KeyboardControls disabled={!connected} onCommand={onCommand} />
+
+        <div className="h-px bg-border/80" />
+
+        <KeyboardControls disabled={!connected} onTypeText={onTypeText} onPressKey={onPressKey} />
+
         <div className="h-px bg-border/80" />
 
         <div className="space-y-3">
