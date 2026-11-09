@@ -1,13 +1,9 @@
 import { FastForward, Play, Rewind } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { ControlAction } from '@/lib/protocol'
+import type { ControlsProps } from '@/types/control'
 
-type MediaControlsProps = {
-  disabled: boolean
-  onCommand: (action: Exclude<ControlAction, 'open_url'>, args: Record<string, number>) => void
-}
-
-export function MediaControls({ disabled, onCommand }: MediaControlsProps) {
+export function MediaControls({ disabled, onCommand }: ControlsProps) {
   function handleClick(action: Exclude<ControlAction, 'open_url'>) {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {

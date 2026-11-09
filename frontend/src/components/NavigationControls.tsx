@@ -1,13 +1,9 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { ControlAction } from '@/lib/protocol'
+import type { ControlsProps } from '@/types/control'
 
-type NavigationControlsProps = {
-  disabled: boolean
-  onCommand: (action: Exclude<ControlAction, 'open_url'>, args: Record<string, number>) => void
-}
-
-export function NavigationControls({ disabled, onCommand }: NavigationControlsProps) {
+export function NavigationControls({ disabled, onCommand }: ControlsProps) {
   function handleClick(action: Exclude<ControlAction, 'open_url'>) {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {

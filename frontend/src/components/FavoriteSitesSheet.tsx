@@ -29,12 +29,12 @@ import {
   type FavoriteSite,
 } from '@/lib/favorites'
 import { toast } from 'sonner'
+import type { ControlsProps } from '@/types/control'
 
-type FavoriteSitesSheetProps = {
+interface FavoriteSitesSheetProps extends ControlsProps {
   favorites: FavoriteSite[]
   onUpdateFavorites: (favorites: FavoriteSite[]) => void
   onOpenUrl: (url: string) => void
-  disabled: boolean
 }
 
 export function FavoriteSitesSheet({

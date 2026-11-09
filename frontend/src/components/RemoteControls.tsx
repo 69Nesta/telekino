@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { QuickAppsStrip } from '@/components/QuickAppsStrip'
 import { MediaControls } from '@/components/MediaControls'
+import { KeyboardControls } from '@/components/KeyboardControls'
 import { NavigationControls } from '@/components/NavigationControls'
 import { TrackpadControls } from '@/components/TrackpadControls'
 import { VolumeControls } from '@/components/VolumeControls'
@@ -101,7 +102,7 @@ export function RemoteControls({
             </Button>
           </div>
         </div>
-
+        <KeyboardControls disabled={!connected} onCommand={onCommand} />
         <div className="h-px bg-border/80" />
 
         <div className="space-y-3">
