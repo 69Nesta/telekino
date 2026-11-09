@@ -103,7 +103,7 @@ pub async fn execute_control(
             }
 
             ControlCommand::Keyboard => {
-                enigo.key(Key::Unicode('v'), Click);
+                enigo.key(Key::Unicode('v'), Direction::Click);
             }
             ControlCommand::OpenUrl { .. } => unreachable!(),
         }
