@@ -2,7 +2,10 @@ use axum::http::StatusCode;
 use enigo::{Axis, Button, Coordinate, Direction, Enigo, Key, Keyboard, Mouse, Settings};
 use std::collections::HashMap;
 
-use crate::models::control::ControlCommand;
+use crate::models::control::{ControlCommand, SpecialKey};
+
+const MAX_TEXT_LEN: usize = 2000;
+const MAX_KEY_REPEAT: f32 = 200.0;
 
 pub async fn execute_control(
     cmd: ControlCommand,
@@ -21,6 +24,41 @@ pub async fn execute_control(
         })?;
 
         match cmd {
+            ControlCommand::Keyboard { text } => {
+                if text.is_empty() {
+                    return Ok(());
+                }
+                if text.chars().count() > MAX_TEXT_LEN {
+                    return Err((
+                        StatusCode::BAD_REQUEST,
+                        format!("Text is too long (max {} characters)", MAX_TEXT_LEN),
+                    ));
+                }
+                enigo.text(&text).map_err(|e| {
+                    (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        format!("Failed to type text: {}", e),
+                    )
+                })?;
+            }
+
+            ControlCommand::KeyPress { key } => {
+                let repeat = args
+                    .get("repeat")
+                    .copied()
+                    .unwrap_or(1.0)
+                    .clamp(1.0, MAX_KEY_REPEAT) as u32;
+                let key = special_key(key);
+                for _ in 0..repeat {
+                    enigo.key(key, Direction::Click).map_err(|e| {
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            format!("Failed to press key: {}", e),
+                        )
+                    })?;
+                }
+            }
+
             ControlCommand::Trackpad => {
                 if let (Some(&x), Some(&y)) =
                     (args.get("x"), args.get("y"))
@@ -54,6 +92,7 @@ pub async fn execute_control(
                 })?;
             }
 
+            
             ControlCommand::Scroll => {
                 for (key, axis) in [("y", Axis::Vertical), ("x", Axis::Horizontal)] {
                     let delta = args.get(key).copied().unwrap_or(0.0).clamp(-20.0, 20.0);
@@ -90,6 +129,8 @@ pub async fn execute_control(
                     ControlCommand::Click
                     | ControlCommand::RightClick
                     | ControlCommand::Scroll
+                    | ControlCommand::Keyboard { .. }
+                    | ControlCommand::KeyPress { .. }
                     | ControlCommand::OpenUrl { .. } => unreachable!(),
                 };
 
@@ -114,6 +155,23 @@ pub async fn execute_control(
     })??;
 
     Ok(())
+}
+
+fn special_key(key: SpecialKey) -> Key {
+    match key {
+        SpecialKey::Backspace => Key::Backspace,
+        SpecialKey::Enter => Key::Return,
+        SpecialKey::Tab => Key::Tab,
+        SpecialKey::Escape => Key::Escape,
+        SpecialKey::Delete => Key::Delete,
+        SpecialKey::Up => Key::UpArrow,
+        SpecialKey::Down => Key::DownArrow,
+        SpecialKey::Left => Key::LeftArrow,
+        SpecialKey::Right => Key::RightArrow,
+        SpecialKey::Home => Key::Home,
+        SpecialKey::End => Key::End,
+        SpecialKey::Space => Key::Space,
+    }
 }
 
 fn open_in_browser(url: &str) -> Result<(), (StatusCode, String)> {

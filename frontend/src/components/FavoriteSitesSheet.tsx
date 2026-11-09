@@ -30,6 +30,7 @@ import {
 } from '@/lib/favorites'
 import { toast } from 'sonner'
 
+
 type FavoriteSitesSheetProps = {
   favorites: FavoriteSite[]
   onUpdateFavorites: (favorites: FavoriteSite[]) => void
