@@ -16,6 +16,7 @@ export type ControlAction =
   | 'volume_down'
   | 'volume_mute'
   | 'left_arrow'
+  | 'keyboard'
   | 'right_arrow'
   | 'track_pad'
   | 'click'

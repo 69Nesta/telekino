@@ -54,6 +54,7 @@ pub async fn execute_control(
                 })?;
             }
 
+            
             ControlCommand::Scroll => {
                 for (key, axis) in [("y", Axis::Vertical), ("x", Axis::Horizontal)] {
                     let delta = args.get(key).copied().unwrap_or(0.0).clamp(-20.0, 20.0);
@@ -99,6 +100,10 @@ pub async fn execute_control(
                         format!("Failed to press key: {}", e),
                     )
                 })?;
+            }
+
+            ControlCommand::Keyboard => {
+                enigo.key(Key::Unicode('v'), Click);
             }
             ControlCommand::OpenUrl { .. } => unreachable!(),
         }

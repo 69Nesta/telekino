@@ -17,6 +17,7 @@ pub enum ControlCommand {
     RightClick,
     Scroll,
     OpenUrl { url: String },
+    Keyboard,
 }
 
 impl ControlCommand {
@@ -29,6 +30,7 @@ impl ControlCommand {
             Self::VolumeDown => "volume_down",
             Self::VolumeMute => "volume_mute",
             Self::LeftArrow => "left_arrow",
+            Self::Keyboard => "keyboard"
             Self::RightArrow => "right_arrow",
             Self::Trackpad => "track_pad",
             Self::Click => "click",
