@@ -1,5 +1,6 @@
 use crate::config::ServerConfig;
 use colored::*;
+use qr2term::*;
 
 pub fn print_banner(config: &ServerConfig, network_url: &str) {
     println!(
@@ -34,6 +35,7 @@ pub fn print_banner(config: &ServerConfig, network_url: &str) {
             "/ws\n"
         )
     );
+    qr2term::print_qr(&format!("http://{network_url}:{}", &config.port.to_string())).unwrap();
 }
 
 fn colorise_url(url: &str, port: &str, suffix: &str) -> String {
